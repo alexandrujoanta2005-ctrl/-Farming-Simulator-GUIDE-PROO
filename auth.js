@@ -6,7 +6,7 @@
   const status = $('authStatus');
 
   const SITE_URL =
-    'https://alexandrujoanta2005-ctrl.github.io/-Farming-Simulator-GUIDE-PRO/';
+    'https://alexandrujoanta2005-ctrl.github.io/-Farming-Simulator-GUIDE-PROO/';
 
   const ADMIN_EMAIL = 'alexandrujoanta6@gmail.com';
 
