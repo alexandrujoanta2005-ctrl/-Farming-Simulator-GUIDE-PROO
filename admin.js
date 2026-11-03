@@ -5,7 +5,7 @@
  const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  async function user(){const {data}=await sb.auth.getUser();return data.user;}
  async function init(){const u=await user();if(!u||u.email.toLowerCase()!==adminEmail)return;
- const b=document.createElement('button');b.textContent='🛠 Admin Panel';b.className='cta';b.style.cssText='position:fixed;right:12px;bottom:82px;z-index:9999';b.onclick=open;b.id='fsAdminOpen';document.body.append(b);
+ if(document.getElementById('fsAdminOpen'))return;const b=document.createElement('button');b.textContent='🛠 Admin Panel';b.className='cta';b.style.cssText='position:fixed;right:12px;bottom:82px;z-index:9999';b.onclick=open;b.id='fsAdminOpen';document.body.append(b);
  }
  async function open(){
  let box=document.getElementById('fsAdminBox');if(!box){box=document.createElement('div');box.id='fsAdminBox';box.style.cssText='position:fixed;inset:5%;z-index:10000;background:#101b12;color:#fff;padding:18px;border:2px solid #8bd12b;border-radius:14px;overflow:auto;box-shadow:0 0 0 9999px #0009';document.body.append(box)}
