@@ -15,6 +15,7 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+
 // Farming Simulator GUIDE PRO - app.js
 
 const games = [25, 22, 19, 17, 15, 13, 11, 2009];
@@ -261,14 +262,11 @@ function savePrefs(p) {
 
   if (window.fsCloudSavePrefs) {
     window.fsCloudSavePrefs(p)
-      .then(({ error }) => {
+      .then(({error}) => {
         if (error) {
-          console.warn(
-            "Setările nu s-au sincronizat în cloud:",
-            error.message
-          );
+          console.warn('Setările nu s-au sincronizat în cloud:', error.message);
         } else {
-          console.info("Setări sincronizate în cloud.");
+          console.info('Setări sincronizate în cloud.');
         }
       })
       .catch(console.error);
@@ -517,10 +515,23 @@ function openSettings() {
       profileEmail.textContent =
         user.email || "Cont Google conectat";
 
-      profileAvatar.textContent =
-        metadata.avatar_url || metadata.picture
-          ? "🟢"
-          : "👤";
+      // Fotografia reală din profilul Google
+      const avatarUrl = metadata.avatar_url || metadata.picture;
+
+      if (avatarUrl) {
+        profileAvatar.innerHTML = "";
+
+        const avatarImage = document.createElement("img");
+        avatarImage.src = avatarUrl;
+        avatarImage.alt = "Fotografie profil Google";
+        avatarImage.referrerPolicy = "no-referrer";
+        avatarImage.style.cssText =
+          "width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;";
+
+        profileAvatar.appendChild(avatarImage);
+      } else {
+        profileAvatar.textContent = "👤";
+      }
 
       connectButton.textContent = "Deconectare";
 
@@ -538,6 +549,7 @@ function openSettings() {
       profileName.textContent = "Contul meu";
       profileEmail.textContent =
         "Conectează-te pentru sincronizare";
+
       profileAvatar.textContent = "👤";
       connectButton.textContent = "Conectare Google";
 
