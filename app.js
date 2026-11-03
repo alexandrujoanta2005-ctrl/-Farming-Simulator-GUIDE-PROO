@@ -1,5 +1,5 @@
 
-// FIX: dezactiveaza cache-ul vechi PWA pentru ca Live Server si telefonul sa incarce mereu fisierele actuale.
+ // FIX: dezactiveaza cache-ul vechi PWA pentru ca Live Server si telefonul sa incarce mereu fisierele actuale.
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
@@ -14,7 +14,6 @@ if ("serviceWorker" in navigator) {
     }
   });
 }
-
 
 // Farming Simulator GUIDE PRO - app.js
 
@@ -259,11 +258,20 @@ function applyPrefs(p = getPrefs()) {
 function savePrefs(p) {
   localStorage.setItem(prefKey, JSON.stringify(p));
   applyPrefs(p);
+
   if (window.fsCloudSavePrefs) {
-    window.fsCloudSavePrefs(p).then(({error}) => {
-      if (error) console.warn('Setările nu s-au sincronizat în cloud:', error.message);
-      else console.info('Setări sincronizate în cloud.');
-    }).catch(console.error);
+    window.fsCloudSavePrefs(p)
+      .then(({ error }) => {
+        if (error) {
+          console.warn(
+            "Setările nu s-au sincronizat în cloud:",
+            error.message
+          );
+        } else {
+          console.info("Setări sincronizate în cloud.");
+        }
+      })
+      .catch(console.error);
   }
 }
 
@@ -303,7 +311,7 @@ function openSettings() {
             Conectează-te pentru sincronizare
           </small>
           <small>
-            Profil local • Google Sign-In în configurare
+            Profil Google • sincronizare Supabase
           </small>
         </div>
 
@@ -473,9 +481,95 @@ function openSettings() {
     go(previousPage === "settings" ? "home" : previousPage);
   };
 
-  document.getElementById("connectGoogle").onclick = () => {
-    alert("Conectarea Google necesită configurarea Firebase Authentication.");
-  };
+  // Profil conectat prin Supabase (Google OAuth), nu Firebase.
+  const profileName = document.getElementById("profileName");
+  const profileEmail = document.getElementById("profileEmail");
+  const profileAvatar = document.getElementById("profileAvatar");
+  const connectButton = document.getElementById("connectGoogle");
+
+  async function refreshGoogleProfile() {
+    const supabase = window.fsSupabase;
+
+    if (!supabase) {
+      profileName.textContent = "Contul meu";
+      profileEmail.textContent = "Supabase nu este configurat";
+      connectButton.textContent = "Conectare";
+      return;
+    }
+
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error) {
+      console.warn("Nu am putut citi sesiunea:", error.message);
+    }
+
+    const user = session?.user;
+
+    if (user) {
+      const metadata = user.user_metadata || {};
+
+      profileName.textContent =
+        metadata.full_name ||
+        metadata.name ||
+        user.email ||
+        "Utilizator";
+
+      profileEmail.textContent =
+        user.email || "Cont Google conectat";
+
+      profileAvatar.textContent =
+        metadata.avatar_url || metadata.picture
+          ? "🟢"
+          : "👤";
+
+      connectButton.textContent = "Deconectare";
+
+      connectButton.onclick = async () => {
+        const { error: signOutError } =
+          await supabase.auth.signOut();
+
+        if (signOutError) {
+          alert("Deconectarea a eșuat: " + signOutError.message);
+        }
+
+        await refreshGoogleProfile();
+      };
+    } else {
+      profileName.textContent = "Contul meu";
+      profileEmail.textContent =
+        "Conectează-te pentru sincronizare";
+      profileAvatar.textContent = "👤";
+      connectButton.textContent = "Conectare Google";
+
+      connectButton.onclick = async () => {
+        const { error: oauthError } =
+          await supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+              redirectTo: window.location.href.split("#")[0]
+            }
+          });
+
+        if (oauthError) {
+          alert("Conectarea Google a eșuat: " + oauthError.message);
+        }
+      };
+    }
+  }
+
+  refreshGoogleProfile();
+
+  if (!window.fsProfileListenerAdded && window.fsSupabase) {
+    window.fsProfileListenerAdded = true;
+
+    window.fsSupabase.auth.onAuthStateChange(() => {
+      setTimeout(() => {
+        if (document.getElementById("profileEmail")) {
+          refreshGoogleProfile();
+        }
+      }, 0);
+    });
+  }
 
   document.getElementById("saveSettings").onclick = () => {
     const next = {
@@ -606,4 +700,3 @@ function renderApp() {
 applyPrefs();
 renderGames();
 renderApp();
-
