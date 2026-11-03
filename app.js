@@ -1,10 +1,10 @@
-
- // FIX: dezactiveaza cache-ul vechi PWA pentru ca Live Server si telefonul sa incarce mereu fisierele actuale.
+// FIX: dezactiveaza cache-ul vechi PWA
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
       const registrations = await navigator.serviceWorker.getRegistrations();
       await Promise.all(registrations.map(reg => reg.unregister()));
+
       if ("caches" in window) {
         const cacheNames = await caches.keys();
         await Promise.all(cacheNames.map(name => caches.delete(name)));
@@ -15,13 +15,14 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-
 // Farming Simulator GUIDE PRO - app.js
 
 const games = [25, 22, 19, 17, 15, 13, 11, 2009];
 const gameBox = document.querySelector("#games");
 
 function renderGames() {
+  if (!gameBox) return;
+
   gameBox.innerHTML = "";
 
   games.forEach((g, i) => {
@@ -202,6 +203,8 @@ function go(id) {
   window.scrollTo(0, 0);
 }
 
+// Navigare
+
 document.querySelectorAll("[data-go]").forEach(b => {
   b.addEventListener("click", () => go(b.dataset.go));
 });
@@ -262,16 +265,21 @@ function savePrefs(p) {
 
   if (window.fsCloudSavePrefs) {
     window.fsCloudSavePrefs(p)
-      .then(({error}) => {
+      .then(({ error }) => {
         if (error) {
-          console.warn('Setările nu s-au sincronizat în cloud:', error.message);
+          console.warn(
+            "Setările nu s-au sincronizat în cloud:",
+            error.message
+          );
         } else {
-          console.info('Setări sincronizate în cloud.');
+          console.info("Setări sincronizate în cloud.");
         }
       })
       .catch(console.error);
   }
 }
+
+// ================= OPEN SETTINGS =================
 
 function openSettings() {
   const page = document.querySelector("#page");
@@ -281,7 +289,10 @@ function openSettings() {
   page.hidden = false;
 
   document.querySelectorAll("[data-go]").forEach(b => {
-    b.classList.toggle("active", b.dataset.go === "settings");
+    b.classList.toggle(
+      "active",
+      b.dataset.go === "settings"
+    );
   });
 
   const p = getPrefs();
@@ -300,6 +311,8 @@ function openSettings() {
         </div>
       </header>
 
+      <!-- PROFIL -->
+
       <div class="profile-card">
         <div class="profile-avatar" id="profileAvatar">👤</div>
 
@@ -315,6 +328,32 @@ function openSettings() {
 
         <button id="connectGoogle">Conectare</button>
       </div>
+
+      <!-- GALERIE FOTO -->
+
+      <div style="
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        margin:12px 0 20px;
+      ">
+        <button type="button" id="chooseProfilePhoto">
+          📷 Schimbă poza
+        </button>
+
+        <button type="button" id="resetProfilePhoto">
+          ↩️ Resetează poza
+        </button>
+
+        <input
+          type="file"
+          id="profilePhotoInput"
+          accept="image/*"
+          hidden
+        >
+      </div>
+
+      <!-- PERSONALIZARE -->
 
       <section class="settings-group">
         <h3>🎨 Personalizare</h3>
@@ -364,6 +403,8 @@ function openSettings() {
         `).join("")}
       </section>
 
+      <!-- NOTIFICARI -->
+
       <section class="settings-group">
         <h3>🔔 Notificări și instalare</h3>
 
@@ -383,6 +424,8 @@ function openSettings() {
           <button id="installHelp">Instrucțiuni</button>
         </div>
       </section>
+
+      <!-- JOC FAVORIT -->
 
       <section class="settings-group">
         <h3>🚜 Preferințe joc</h3>
@@ -415,6 +458,8 @@ function openSettings() {
         </div>
       </section>
 
+      <!-- DATE -->
+
       <section class="settings-group">
         <h3>💾 Date și aplicație</h3>
 
@@ -443,6 +488,8 @@ function openSettings() {
         </div>
       </section>
 
+      <!-- SALVARE -->
+
       <div class="settings-savebar">
         <button class="settings-save" id="saveSettings">
           💾 SALVEAZĂ SETĂRILE
@@ -451,6 +498,8 @@ function openSettings() {
 
     </div>
   `;
+
+  // ================= INCARCARE SETARI =================
 
   const ids = [
     "prefLanguage",
@@ -471,19 +520,93 @@ function openSettings() {
       const key = id.replace("pref", "").toLowerCase();
       el.checked = !!p[key];
     } else {
-      el.value = p[id] ?? (id === "favoriteGame" ? "25" : "PC");
+      el.value = p[id] ??
+        (id === "favoriteGame" ? "25" : "PC");
     }
   });
+
+  // ================= BACK =================
 
   document.getElementById("settingsBack").onclick = () => {
     go(previousPage === "settings" ? "home" : previousPage);
   };
 
-  // Profil conectat prin Supabase (Google OAuth), nu Firebase.
+  // ================= PROFIL GOOGLE =================
+
   const profileName = document.getElementById("profileName");
   const profileEmail = document.getElementById("profileEmail");
   const profileAvatar = document.getElementById("profileAvatar");
   const connectButton = document.getElementById("connectGoogle");
+
+  const photoInput = document.getElementById("profilePhotoInput");
+  const customPhotoKey = "fs-guide-pro-custom-profile-photo";
+
+  // Afisare fotografie profil
+
+  function showProfilePhoto(src) {
+    profileAvatar.innerHTML = "";
+
+    if (!src) {
+      profileAvatar.textContent = "👤";
+      return;
+    }
+
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = "Fotografie profil";
+
+    img.style.cssText = `
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      border-radius:50%;
+      display:block;
+    `;
+
+    profileAvatar.appendChild(img);
+  }
+
+  // ================= GALERIE =================
+
+  document.getElementById("chooseProfilePhoto").onclick = () => {
+    photoInput.click();
+  };
+
+  photoInput.onchange = () => {
+    const file = photoInput.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Alege un fișier imagine.");
+      photoInput.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      try {
+        localStorage.setItem(customPhotoKey, reader.result);
+        showProfilePhoto(reader.result);
+      } catch (err) {
+        alert("Poza este prea mare. Alege o fotografie mai mică.");
+        console.error(err);
+      }
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  // ================= RESET POZA =================
+
+  document.getElementById("resetProfilePhoto").onclick = () => {
+    localStorage.removeItem(customPhotoKey);
+    photoInput.value = "";
+    refreshGoogleProfile();
+  };
+
+  // ================= GOOGLE PROFILE =================
 
   async function refreshGoogleProfile() {
     const supabase = window.fsSupabase;
@@ -492,10 +615,14 @@ function openSettings() {
       profileName.textContent = "Contul meu";
       profileEmail.textContent = "Supabase nu este configurat";
       connectButton.textContent = "Conectare";
+      showProfilePhoto(localStorage.getItem(customPhotoKey) || "");
       return;
     }
 
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error
+    } = await supabase.auth.getSession();
 
     if (error) {
       console.warn("Nu am putut citi sesiunea:", error.message);
@@ -515,23 +642,15 @@ function openSettings() {
       profileEmail.textContent =
         user.email || "Cont Google conectat";
 
-      // Fotografia reală din profilul Google
-      const avatarUrl = metadata.avatar_url || metadata.picture;
+      const avatarUrl =
+        metadata.avatar_url ||
+        metadata.picture;
 
-      if (avatarUrl) {
-        profileAvatar.innerHTML = "";
-
-        const avatarImage = document.createElement("img");
-        avatarImage.src = avatarUrl;
-        avatarImage.alt = "Fotografie profil Google";
-        avatarImage.referrerPolicy = "no-referrer";
-        avatarImage.style.cssText =
-          "width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;";
-
-        profileAvatar.appendChild(avatarImage);
-      } else {
-        profileAvatar.textContent = "👤";
-      }
+      showProfilePhoto(
+        localStorage.getItem(customPhotoKey) ||
+        avatarUrl ||
+        ""
+      );
 
       connectButton.textContent = "Deconectare";
 
@@ -540,17 +659,24 @@ function openSettings() {
           await supabase.auth.signOut();
 
         if (signOutError) {
-          alert("Deconectarea a eșuat: " + signOutError.message);
+          alert(
+            "Deconectarea a eșuat: " +
+            signOutError.message
+          );
         }
 
         await refreshGoogleProfile();
       };
+
     } else {
       profileName.textContent = "Contul meu";
       profileEmail.textContent =
         "Conectează-te pentru sincronizare";
 
-      profileAvatar.textContent = "👤";
+      showProfilePhoto(
+        localStorage.getItem(customPhotoKey) || ""
+      );
+
       connectButton.textContent = "Conectare Google";
 
       connectButton.onclick = async () => {
@@ -563,13 +689,18 @@ function openSettings() {
           });
 
         if (oauthError) {
-          alert("Conectarea Google a eșuat: " + oauthError.message);
+          alert(
+            "Conectarea Google a eșuat: " +
+            oauthError.message
+          );
         }
       };
     }
   }
 
   refreshGoogleProfile();
+
+  // Actualizare profil dupa login/logout
 
   if (!window.fsProfileListenerAdded && window.fsSupabase) {
     window.fsProfileListenerAdded = true;
@@ -583,33 +714,60 @@ function openSettings() {
     });
   }
 
+  // ================= SALVARE SETARI =================
+
   document.getElementById("saveSettings").onclick = () => {
     const next = {
       ...getPrefs(),
-      language: document.getElementById("prefLanguage").value,
-      theme: document.getElementById("prefTheme").value,
-      contrast: document.getElementById("prefContrast").checked,
-      animations: document.getElementById("prefAnimations").checked,
-      vibration: document.getElementById("prefVibration").checked,
-      largeText: document.getElementById("prefLargeText").checked,
-      favoriteGame: document.getElementById("favoriteGame").value,
-      platform: document.getElementById("platform").value
+
+      language:
+        document.getElementById("prefLanguage").value,
+
+      theme:
+        document.getElementById("prefTheme").value,
+
+      contrast:
+        document.getElementById("prefContrast").checked,
+
+      animations:
+        document.getElementById("prefAnimations").checked,
+
+      vibration:
+        document.getElementById("prefVibration").checked,
+
+      largeText:
+        document.getElementById("prefLargeText").checked,
+
+      favoriteGame:
+        document.getElementById("favoriteGame").value,
+
+      platform:
+        document.getElementById("platform").value
     };
 
     savePrefs(next);
     renderApp();
     openSettings();
+
     alert("Setările au fost salvate!");
   };
 
-  document.getElementById("enableNotifications").onclick = async () => {
-    if (!("Notification" in window)) {
-      alert("Browserul nu suportă notificări.");
-      return;
-    }
+  // ================= NOTIFICARI =================
 
-    alert("Permisiune: " + await Notification.requestPermission());
-  };
+  document.getElementById("enableNotifications").onclick =
+    async () => {
+      if (!("Notification" in window)) {
+        alert("Browserul nu suportă notificări.");
+        return;
+      }
+
+      alert(
+        "Permisiune: " +
+        await Notification.requestPermission()
+      );
+    };
+
+  // ================= INSTALARE =================
 
   document.getElementById("installHelp").onclick = () => {
     alert(
@@ -619,6 +777,8 @@ function openSettings() {
     );
   };
 
+  // ================= RESET SETARI =================
+
   document.getElementById("resetPrefs").onclick = () => {
     if (confirm("Resetezi toate setările?")) {
       localStorage.removeItem(prefKey);
@@ -627,6 +787,8 @@ function openSettings() {
     }
   };
 
+  // ================= EXPORT =================
+
   document.getElementById("exportPrefs").onclick = () => {
     const blob = new Blob(
       [JSON.stringify(getPrefs(), null, 2)],
@@ -634,6 +796,7 @@ function openSettings() {
     );
 
     const a = document.createElement("a");
+
     a.href = URL.createObjectURL(blob);
     a.download = "fs-guide-pro-settings.json";
     a.click();
@@ -641,8 +804,12 @@ function openSettings() {
     URL.revokeObjectURL(a.href);
   };
 
+  // ================= ABOUT =================
+
   document.getElementById("aboutApp").onclick = () => {
-    alert("Farming Simulator GUIDE PRO\nGhid neoficial.");
+    alert(
+      "Farming Simulator GUIDE PRO\nGhid neoficial."
+    );
   };
 }
 
@@ -708,6 +875,8 @@ function renderApp() {
 
   renderGames();
 }
+
+// ================= START =================
 
 applyPrefs();
 renderGames();
