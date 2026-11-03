@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="ro">
 <head>
@@ -8,6 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Farming Simulator GUIDE PRO - Ghiduri, utilaje, culturi, animale și informații Farming Simulator.">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png" type="image/png">
 <title>Farming Simulator GUIDE PRO</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
@@ -16,30 +17,38 @@
 
 <header class="top">
   <div class="brand">
-    <span class="wheat">🌾</span>
+    <span class="wheat" aria-hidden="true">🌾</span>
     <div>
       <b>Farming</b>
       <b>Simulator</b>
       <small>GUIDE <em>PRO</em></small>
     </div>
-    <span class="mini">🚜</span>
+    <span class="mini" aria-hidden="true">🚜</span>
   </div>
 
-  <div class="hero-tractor">🚜</div>
+  <div class="hero-tractor" aria-hidden="true">🚜</div>
 
   <div class="tools">
-    <button data-action="notifications" aria-label="Notificări">♧</button>
+    <button data-action="notifications" aria-label="Notificări" title="Notificări">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+        <path d="M10 21h4"/>
+      </svg>
+    </button>
 
-    <button data-go="messages" id="messagesButton" aria-label="Mesaje">
-      ✉️
+    <button data-go="messages" id="messagesButton" aria-label="Mesaje" title="Mesaje" class="message-icon">
+      <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.7 8.7 0 0 1-4-.9L3 21l1.9-4.8a8.5 8.5 0 1 1 16.1-4.7Z"/>
+        <path d="M8 11h8M8 14h5"/>
+      </svg>
       <span id="messagesBadge" class="messages-badge" hidden>0</span>
     </button>
 
-    <button data-go="settings" aria-label="Setări">⚙</button>
+    <button data-go="settings" aria-label="Setări" title="Setări">⚙</button>
   </div>
 </header>
 
-<nav class="quick">
+<nav class="quick" aria-label="Navigare rapidă">
   <button class="active" data-go="home">⌂ Acasă</button>
   <button data-go="all">▱ Toate Farmingurile</button>
   <button data-go="fs25">🎮 FS25</button>
@@ -50,17 +59,14 @@
 </nav>
 
 <main id="home">
-
   <section class="hero">
     <div class="hero-copy">
       <span class="pill">NOU</span>
       <h1>Farming<br>Simulator <strong>25</strong></h1>
-      <p data-i18n="description">
-        Ghid complet, catalog de utilaje, culturi, animale și multe altele.
-      </p>
+      <p data-i18n="description">Ghid complet, catalog de utilaje, culturi, animale și multe altele.</p>
       <button class="cta" data-go="fs25">Intră în FS25 ➜</button>
     </div>
-    <div class="hero-art">🚜<span>FS25</span></div>
+    <div class="hero-art" aria-label="Tractor Farming Simulator">🚜<span>FS25</span></div>
   </section>
 
   <section class="section">
@@ -72,39 +78,16 @@
   </section>
 
   <section class="section">
-    <div class="section-head">
-      <h2>▰ Categorii principale</h2>
-    </div>
-
+    <div class="section-head"><h2>▰ Categorii principale</h2></div>
     <div class="categories">
-      <button class="category" data-go="machines">
-        <span>🚜</span>
-        <b>Utilaje</b>
-        <small>Tractoare, combine, remorci.</small>
-        <i>➜</i>
-      </button>
-
-      <button class="category" data-go="crops">
-        <span>🌾</span>
-        <b>Culturi</b>
-        <small>Semănat și recoltare.</small>
-        <i>➜</i>
-      </button>
-
-      <button class="category" data-go="animals">
-        <span>🐄</span>
-        <b>Animale</b>
-        <small>Creștere și producție.</small>
-        <i>➜</i>
-      </button>
+      <button class="category" data-go="machines"><span>🚜</span><b>Utilaje</b><small>Tractoare, combine, remorci.</small><i>➜</i></button>
+      <button class="category" data-go="crops"><span>🌾</span><b>Culturi</b><small>Semănat și recoltare.</small><i>➜</i></button>
+      <button class="category" data-go="animals"><span>🐄</span><b>Animale</b><small>Creștere și producție.</small><i>➜</i></button>
     </div>
   </section>
 
   <section class="section">
-    <div class="section-head">
-      <h2>⭐ Cele mai căutate</h2>
-    </div>
-
+    <div class="section-head"><h2>⭐ Cele mai căutate</h2></div>
     <div class="popular">
       <article>🚜<b>Fendt 1050 Vario</b></article>
       <article>🚜<b>John Deere 8R</b></article>
@@ -114,21 +97,12 @@
   </section>
 
   <section class="section">
-    <div class="section-head">
-      <h2>▤ Ghiduri și noutăți</h2>
-      <button data-go="guides">Vezi toate ➜</button>
-    </div>
-
+    <div class="section-head"><h2>▤ Ghiduri și noutăți</h2><button data-go="guides">Vezi toate ➜</button></div>
     <div class="news">
       <div class="farm-art">🌅🏡</div>
-      <div>
-        <b>Ghid de început în FS25</b>
-        <p>Sfaturi utile pentru un start reușit.</p>
-        <button data-go="guides">➜</button>
-      </div>
+      <div><b>Ghid de început în FS25</b><p>Sfaturi utile pentru un start reușit.</p><button data-go="guides" aria-label="Deschide ghidurile">➜</button></div>
     </div>
   </section>
-
 </main>
 
 <div id="page" hidden></div>
@@ -136,35 +110,23 @@
 <!-- AUTENTIFICARE -->
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
-    <div style="font-size:42px">🚜</div>
+    <div style="font-size:42px" aria-hidden="true">🚜</div>
     <h1>Farming Simulator GUIDE PRO</h1>
     <p>Conectează-te pentru a intra în aplicație</p>
-
-    <input id="authEmail" type="email" placeholder="Email">
-    <input id="authPassword" type="password" placeholder="Parolă (min. 6 caractere)">
-
+    <input id="authEmail" type="email" placeholder="Email" autocomplete="email">
+    <input id="authPassword" type="password" placeholder="Parolă (min. 6 caractere)" autocomplete="current-password">
     <button id="authAction">Conectare</button>
-
-    <button id="authGoogle" class="auth-alt">
-      🌐 Continuă cu Google
-    </button>
-
-    <button id="authMode" class="auth-alt">
-      Nu ai cont? Înregistrare
-    </button>
-
-    <button id="authForgot" class="auth-alt">
-      Am uitat parola
-    </button>
-
-    <p id="authStatus"></p>
+    <button id="authGoogle" class="auth-alt">🌐 Continuă cu Google</button>
+    <button id="authMode" class="auth-alt">Nu ai cont? Înregistrare</button>
+    <button id="authForgot" class="auth-alt">Am uitat parola</button>
+    <p id="authStatus" role="status" aria-live="polite"></p>
   </div>
 </div>
 
 <footer>Farming Simulator GUIDE PRO · Ghid neoficial</footer>
 
 <!-- NAVIGARE JOS -->
-<nav class="bottom">
+<nav class="bottom" aria-label="Navigare principală">
   <button data-go="home"><span>⌂</span>Acasă</button>
   <button data-go="all"><span>▱</span>Toate</button>
   <button data-go="fs25"><span>🎮</span>FS25</button>

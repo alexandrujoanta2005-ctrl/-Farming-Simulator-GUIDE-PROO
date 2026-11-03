@@ -255,3 +255,63 @@ body.large-text .quick button{font-size:16px}
   border-bottom: 1px solid #29472d;
   padding-bottom: 12px;
 }
+/* ===== BUTOANE HEADER MODERNE ===== */
+
+.tools .message-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(65, 255, 130, 0.08);
+  border: 1px solid rgba(65, 255, 130, 0.18);
+  color: #7dff9b;
+  transition: .25s ease;
+}
+
+.tools .message-icon svg {
+  width: 23px;
+  height: 23px;
+}
+
+.tools .message-icon:hover {
+  background: rgba(65, 255, 130, 0.18);
+  border-color: #39ff78;
+  box-shadow: 0 0 18px rgba(57, 255, 120, .25);
+  transform: translateY(-2px);
+}
+
+.tools button[data-action="notifications"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  color: #7dff9b;
+}
+
+/* Badge mesaje */
+#messagesBadge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50px;
+  background: #ff3b5c;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  border: 2px solid #071008;
+}
+
+#messagesBadge[hidden] {
+  display: none;
+}
