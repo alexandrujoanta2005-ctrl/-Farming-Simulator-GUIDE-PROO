@@ -881,3 +881,60 @@ function renderApp() {
 applyPrefs();
 renderGames();
 renderApp();
+// ================= CMS ADMIN (Alex) =================
+// Adaugă editor pentru articole și elemente noi în Supabase.
+(() => {
+  const CMS_ADMIN = "alexandrujoanta6@gmail.com";
+  const CMS_TABLE = "fs_public_content";
+  let cmsUser = null;
+  let cmsRows = [];
+  let cmsCategory = "general";
+  const cmsSlug = (s) => String(s || "item").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const cmsEsc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function cmsIsAdmin(){ return (cmsUser?.email || "").toLowerCase() === CMS_ADMIN; }
+  function cmsCategoryForPage(id){ return ({machines:"machines",crops:"crops",animals:"animals",guides:"guides",fs25:"fs25",info:"info",all:"all"})[id] || "general"; }
+  async function cmsLoad(){
+    const sb=window.fsSupabase; if(!sb) return;
+    const {data:{session}}=await sb.auth.getSession(); cmsUser=session?.user||null;
+    const {data,error}=await sb.from(CMS_TABLE).select("*").order("created_at",{ascending:false});
+    if(error){console.warn("CMS:",error.message);return;} cmsRows=data||[];
+  }
+  function cmsModal(row={}){
+    if(!cmsIsAdmin()) return;
+    const old=document.getElementById("fsCmsModal"); if(old)old.remove();
+    const modal=document.createElement("div"); modal.id="fsCmsModal";
+    modal.style.cssText="position:fixed;inset:0;z-index:99999;background:#000b;display:grid;place-items:center;padding:16px;overflow:auto";
+    modal.innerHTML=`<form id="fsCmsForm" style="background:#101b12;color:#eaffea;border:1px solid #4b8d35;border-radius:16px;padding:20px;width:min(520px,100%);display:grid;gap:12px;max-height:90vh;overflow:auto">
+      <h2 style="margin:0;color:#a4f31c">✏️ Editor GUIDE PRO</h2>
+      <label>Categorie<select name="category" style="width:100%;padding:10px"><option value="machines">Utilaje</option><option value="crops">Culturi</option><option value="animals">Animale</option><option value="guides">Ghiduri</option><option value="fs25">FS25</option><option value="info">Info</option><option value="general">General</option></select></label>
+      <label>Titlu<input name="title" required maxlength="180" style="width:100%;padding:10px" value="${cmsEsc(row.title||"")}"></label>
+      <label>Descriere / conținut<textarea name="body" rows="6" style="width:100%;padding:10px">${cmsEsc(row.body||row.content||"")}</textarea></label>
+      <label>URL imagine<input name="image_url" style="width:100%;padding:10px" placeholder="https://..." value="${cmsEsc(row.image_url||"")}"></label>
+      <label>Încarcă imagine<input type="file" name="image" accept="image/*"></label>
+      <small id="fsCmsStatus"></small><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="submit" style="padding:12px;background:#a4f31c;color:#071008;font-weight:bold">💾 Salvează</button>${row.id?'<button type="button" id="fsCmsDelete" style="padding:12px;background:#a33;color:white">🗑 Șterge</button>':''}<button type="button" id="fsCmsClose" style="padding:12px">Închide</button></div></form>`;
+    document.body.append(modal); const form=modal.querySelector("form"); form.elements.category.value=row.category||cmsCategory;
+    modal.querySelector("#fsCmsClose").onclick=()=>modal.remove();
+    modal.querySelector("#fsCmsDelete")?.addEventListener("click",async()=>{if(!confirm("Ștergi acest articol?"))return;const {error}=await window.fsSupabase.from(CMS_TABLE).delete().eq("id",row.id);if(error)alert(error.message);else{modal.remove();await cmsRefresh();}});
+    form.onsubmit=async e=>{e.preventDefault();const status=modal.querySelector("#fsCmsStatus");status.textContent="Se salvează...";const sb=window.fsSupabase;if(!sb){status.textContent="Supabase nu este configurat.";return;}
+      let image_url=form.elements.image_url.value.trim();const file=form.elements.image.files[0];
+      if(file){const ext=(file.name.split(".").pop()||"jpg").toLowerCase();const path=`cms/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;const up=await sb.storage.from("fs-admin-images").upload(path,file,{upsert:true});if(up.error){status.textContent="Upload: "+up.error.message;return;}image_url=sb.storage.from("fs-admin-images").getPublicUrl(path).data.publicUrl;}
+      const title=form.elements.title.value.trim(),category=form.elements.category.value;const payload={category,slug:row.slug||cmsSlug(title),title,body:form.elements.body.value.trim(),image_url,updated_at:new Date().toISOString()};
+      let q=row.id?sb.from(CMS_TABLE).update(payload).eq("id",row.id):sb.from(CMS_TABLE).upsert(payload,{onConflict:"slug"});const result=await q;if(result.error){status.textContent=result.error.message;return;}modal.remove();await cmsRefresh();
+    };
+  }
+  async function cmsRefresh(){await cmsLoad();if(previousPage&&previousPage!=="home"&&previousPage!=="settings")go(previousPage);else cmsAddAdminButton();}
+  function cmsAddAdminButton(){if(!cmsIsAdmin())return;const home=document.querySelector("#home");if(!home||document.getElementById("fsCmsAddHome"))return;const b=document.createElement("button");b.id="fsCmsAddHome";b.textContent="＋ Adaugă conținut (ADMIN)";b.className="cta";b.style.cssText="margin:12px;padding:12px;background:#a4f31c;color:#071008";b.onclick=()=>cmsModal({category:"general"});home.prepend(b);}
+  function cmsDecoratePage(id){const page=document.querySelector("#page");if(!page)return;const cat=cmsCategoryForPage(id);const list=page.querySelector(".itemlist");if(!list)return;
+    // Override articole salvate după slug/titlu și atașează butoane admin.
+    list.querySelectorAll("article").forEach((art,i)=>{const titleEl=art.querySelector("b,strong,h3");if(!titleEl)return;const title=titleEl.textContent.trim();const slug=cmsSlug(title);const saved=cmsRows.find(r=>r.category===cat&&(r.slug===slug||r.title===title));if(saved){titleEl.textContent=saved.title;const p=art.querySelector("p");if(p)p.textContent=saved.body||"";if(saved.image_url){const img=document.createElement("img");img.src=saved.image_url;img.alt=saved.title;img.style.cssText="width:100%;max-height:190px;object-fit:cover;border-radius:10px";art.prepend(img);}art.dataset.cmsId=saved.id;}
+      if(cmsIsAdmin()){const edit=document.createElement("button");edit.type="button";edit.textContent="✏️ Editează";edit.style.cssText="margin-top:8px;padding:8px;background:#243d20;color:#a4f31c;border:1px solid #4b8d35;border-radius:8px";edit.onclick=e=>{e.stopPropagation();cmsModal(saved||{category:cat,title,body:art.querySelector("p")?.textContent||"",slug});};art.append(edit);}
+    });
+    cmsRows.filter(r=>r.category===cat&&!list.querySelector(`[data-cms-id="${r.id}"]`)).forEach(r=>{const art=document.createElement("article");art.dataset.cmsId=r.id;art.innerHTML=`${r.image_url?`<img src="${cmsEsc(r.image_url)}" alt="" style="width:100%;max-height:190px;object-fit:cover;border-radius:10px">`:""}<b>${cmsEsc(r.title)}</b><p>${cmsEsc(r.body||"")}</p>`;if(cmsIsAdmin()){const e=document.createElement("button");e.textContent="✏️ Editează";e.onclick=()=>cmsModal(r);art.append(e);}list.append(art);});
+    if(cmsIsAdmin()){const add=document.createElement("button");add.className="cta";add.textContent="＋ Adaugă articol";add.style="margin:12px 0;padding:12px;background:#a4f31c;color:#071008";add.onclick=()=>cmsModal({category:cat});list.append(add);}
+  }
+  // Integrare cu navigarea existentă fără să înlocuiască funcțiile originale.
+  const oldGo=window.go;
+  if(typeof oldGo==="function")window.go=function(id){oldGo(id);if(id!=="home"&&id!=="settings")cmsDecoratePage(id);};
+  document.addEventListener("DOMContentLoaded",async()=>{await cmsLoad();cmsAddAdminButton();if(previousPage&&previousPage!=="home")cmsDecoratePage(previousPage);});
+  if(window.fsSupabase)window.fsSupabase.auth.onAuthStateChange(()=>setTimeout(cmsRefresh,100));
+})();
