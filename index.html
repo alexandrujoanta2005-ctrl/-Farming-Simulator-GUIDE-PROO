@@ -127,9 +127,37 @@
 
 <div id="page" hidden></div>
 
-<div id="authGate" class="auth-gate"><div class="auth-card"><div style="font-size:42px">🚜</div><h1>Farming Simulator GUIDE PRO</h1><p>Conectează-te pentru a intra în aplicație</p><input id="authEmail" type="email" placeholder="Email"><input id="authPassword" type="password" placeholder="Parolă (min. 6 caractere)"><button id="authAction">Conectare</button><button id="authGoogle" class="auth-alt">🌐 Continuă cu Google</button><button id="authMode" class="auth-alt">Nu ai cont? Înregistrare</button><button id="authForgot" class="auth-alt">Am uitat parola</button><p id="authStatus"></p></div></div>
+<!-- AUTENTIFICARE -->
+<div id="authGate" class="auth-gate">
+  <div class="auth-card">
+    <div style="font-size:42px">🚜</div>
+    <h1>Farming Simulator GUIDE PRO</h1>
+    <p>Conectează-te pentru a intra în aplicație</p>
+
+    <input id="authEmail" type="email" placeholder="Email">
+    <input id="authPassword" type="password" placeholder="Parolă (min. 6 caractere)">
+
+    <button id="authAction">Conectare</button>
+
+    <button id="authGoogle" class="auth-alt">
+      🌐 Continuă cu Google
+    </button>
+
+    <button id="authMode" class="auth-alt">
+      Nu ai cont? Înregistrare
+    </button>
+
+    <button id="authForgot" class="auth-alt">
+      Am uitat parola
+    </button>
+
+    <p id="authStatus"></p>
+  </div>
+</div>
+
 <footer>Farming Simulator GUIDE PRO · Ghid neoficial</footer>
 
+<!-- NAVIGARE JOS -->
 <nav class="bottom">
   <button data-go="home"><span>⌂</span>Acasă</button>
   <button data-go="all"><span>▱</span>Toate</button>
@@ -141,6 +169,7 @@
   <button data-go="settings"><span>⚙</span>Setări</button>
 </nav>
 
+<!-- SCRIPTURI -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="auth.js"></script>
