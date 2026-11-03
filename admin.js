@@ -1,4 +1,3 @@
-
 (() => {
   const sb = window.fsSupabase;
   if (!sb) return console.error("Supabase lipsește.");
@@ -254,16 +253,38 @@
     if(go==="messages")renderMessages();
   });
 
-  async function init(){
+  async function init() {
     styles();
-    const b=document.createElement("button");
-    b.id="fsAdminOpen";b.className="cta";b.textContent="🛠 Admin Panel";
-    b.onclick=openAdmin;
-    document.body.append(b);
+
+    const isAdmin = await admin();
+    let b = $("fsAdminOpen");
+
+    if (isAdmin) {
+      // Creează butonul o singură dată și doar pentru administrator
+      if (!b) {
+        b = document.createElement("button");
+        b.id = "fsAdminOpen";
+        b.className = "cta";
+        b.textContent = "🛠 Admin Panel";
+        b.onclick = openAdmin;
+        document.body.append(b);
+      }
+    } else {
+      // Nu afișa panoul/butonul pentru ceilalți utilizatori
+      b?.remove();
+      $("fsAdminBox")?.remove();
+    }
+
     await renderContent();
-    const {data}=await sb.from(MSG).select("*").order("created_at",{ascending:false});
-    updateBadge(data||[]);
+
+    const { data } = await sb
+      .from(MSG)
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    updateBadge(data || []);
   }
+
   window.addEventListener("load",init);
   window.addEventListener("fs-admin-status",()=>admin());
   sb.auth.onAuthStateChange(()=>setTimeout(init,0));
